@@ -1,0 +1,48 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: cm-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: charity_market
+      MYSQL_USER: market
+      MYSQL_PASSWORD: market123
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - cm-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 8s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    container_name: cm-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:mysql://mysql:3306/charity_market?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: cm-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8088:80"
+
+volumes:
+  cm-mysql-data:
