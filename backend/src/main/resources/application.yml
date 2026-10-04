@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: charity-market
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:charity_market}?useUnicode=true&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+    username: ${DB_USER:cm}
+    password: ${DB_PASSWORD:cm123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.MySQLDialect
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+
+app:
+  # 入场二维码指向的前端地址（核销页 /checkin?code=xxxxxx）
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:5173}
+  # 摊位分配时每路电箱可承载的总功率(W)
+  power-circuit-capacity: 2000
+
+logging:
+  level:
+    com.cm: INFO

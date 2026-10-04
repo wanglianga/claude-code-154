@@ -1,0 +1,52 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: cm-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: charity_market
+      MYSQL_USER: cm
+      MYSQL_PASSWORD: cm123456
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - cm-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: cm-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: charity_market
+      DB_USER: cm
+      DB_PASSWORD: cm123456
+      # 入场二维码扫码后跳转的前端地址（浏览器侧 localhost 即 nginx 容器映射的 80 端口）
+      PUBLIC_BASE_URL: http://localhost
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: cm-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  cm-mysql-data:
